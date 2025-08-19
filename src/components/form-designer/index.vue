@@ -1,10 +1,10 @@
 <!--
 /**
- * author: vformAdmin
- * email: vdpadmin@163.com
- * website: https://www.vform666.com
+ * null
+ * email: @@@
+ * website: https://#
  * date: 2021.08.18
- * remark: 如果要分发VForm源码，需在本文件顶部保留此文件头信息！！
+ *  
  */
 -->
 
@@ -142,10 +142,10 @@
         vsCodeFlag: false,
         caseName: '',
 
-        docUrl: 'https://www.vform666.com/document3.html',
+        docUrl: 'https://#/document3.html',
         gitUrl: 'https://github.com/vform666/variant-form3-vite',
-        chatUrl: 'https://www.vform666.com/pages/chat-group/',
-        subScribeUrl: 'https://www.vform666.com/pages/pro/',
+        chatUrl: 'https://#/pages/chat-group/',
+        subScribeUrl: 'https://#/pages/pro/',
 
         scrollerHeight: 0,
 
@@ -197,7 +197,7 @@
           const msgObj = {
             cmd: 'openUrl',
             data: {
-              url: 'https://www.vform666.com/'
+              url: 'https://#/'
             }
           }
           window.parent.postMessage(msgObj, '*')
