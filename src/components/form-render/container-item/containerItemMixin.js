@@ -56,6 +56,10 @@ export default {
       traverseFieldWidgetsOfContainer(this.widget, clearRulesFn)
     },
 
+    setVisible(flag) {
+      this.widget.visible = flag
+    },
+
     activeTab(tabIndex) { //tabIndex从0计数
       if ((tabIndex >= 0) && (tabIndex < this.widget.tabs.length)) {
         this.widget.tabs.forEach((tp, idx) => {
@@ -208,6 +212,59 @@ export default {
         this.widget.options.customClass.splice(foundIdx, 1)
       }
     },
+
+    emitDialogOkButtonClick(event) {
+			if (!!this.designState) {
+				//设计状态不触发点击事件
+				return
+			}
+
+			console.log(
+				'emitDialogOkButtonClick',
+				this.widget.options.onOkButtonClick
+			)
+
+			if (!!this.widget.options.onOkButtonClick) {
+				let customFn = new Function(this.widget.options.onOkButtonClick)
+				customFn.call(this)
+			} else {
+				/* 必须调用mixins中的dispatch方法逐级向父组件发送消息！！ */
+				this.dispatch('VFormRender', 'okButtonClick', [this])
+			}
+		},
+
+		emitDialogCancelButtonClick() {
+			if (!!this.designState) {
+				//设计状态不触发点击事件
+				return
+			}
+
+			if (!!this.widget.options.onCancelButtonClick) {
+				let customFn = new Function(
+					this.widget.options.onCancelButtonClick
+				)
+				customFn.call(this)
+			} else {
+				/* 必须调用mixins中的dispatch方法逐级向父组件发送消息！！ */
+				this.dispatch('VFormRender', 'cancelButtonClick', [this])
+			}
+		},
+
+		handleOnDialogOpened() {
+			if (!!this.widget.options.onDialogOpened) {
+				let mountFunc = new Function(this.widget.options.onDialogOpened)
+				mountFunc.call(this)
+			}
+		},
+
+		handleOnDialogBeforeClose() {
+			if (!!this.widget.options.onDialogBeforeClose) {
+				let mountFunc = new Function(
+					this.widget.options.onDialogBeforeClose
+				)
+				mountFunc.call(this)
+			}
+		},
 
     //--------------------- 以上为组件支持外部调用的API方法 end ------------------//
 

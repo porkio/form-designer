@@ -60,7 +60,6 @@
 import emitter from '@/utils/emitter'
 import './container-item/index'
 import FieldComponents from '@/components/form-designer/form-widget/field-widget/index'
-
 import {
   generateId,
   deepClone,
@@ -205,9 +204,9 @@ export default {
     },
 
     getContainerWidgetName(widget) {
-      if (widget.type === 'grid' || widget.type === 'dialog') {
+      if (widget.type === 'grid') {
         //grid-item跟VueGridLayout全局注册组件重名，故特殊处理！！
-        return `vf-${widget.type}-item`
+        return 'vf-grid-item'
       }
 
       return widget.type + '-item'
@@ -765,33 +764,68 @@ export default {
       }
     },
 
-    widgetIsSubFormType(e) {
+    
+
+    getContainerWidgetByName(e, o) {
+      if (!e) return null
+      let t = null
       return (
-        e.type === 'sub-form' ||
-        e.type === 'grid-sub-form' ||
-        e.type === 'table-sub-form'
+        traverseContainerWidgets(e, (n) => {
+          n.options.name === o && (t = n)
+        }),
+        t
       )
     },
 
-    showDialog(dialogName) {
-      // 通过 widgetRefList 获取 el-dialog 组件引用
-      if (!!dialogName) {
-        let foundW = this.getWidgetRef(dialogName)
-        if (!!foundW) {
-          foundW.setVisible(true)
-        }
+    showDialog(e, o = {}, t = {}, a = '') {
+      let n = this.getTopFormRef(),
+        i = getContainerWidgetByName(n.widgetList, e)
+      if (!e || i.type !== 'vf-dialog') {
+        this.$message.error(this.i18nt('render.hint.refNotFound') + e)
+        return
       }
+      let l = {
+          widgetList: deepClone(i.widgetList),
+          formConfig: cloneFormConfigWithoutEventHandler(n.formConfig),
+        },
+        r = generateId() + '',
+        s = createVNode(
+          DynamicDialog,
+          {
+            options: i.options,
+            formJson: l,
+            formData: o || {},
+            optionData: n.optionData,
+            globalDsv: n.globalDsv,
+            parentFormRef: this,
+            extraData: t,
+            wrapperId: r,
+            title: a,
+          },
+          this.$slots
+        )
+      s.appContext = this.$root.$.appContext
+      let d = document.createElement('div')
+      return (
+        (d.id = 'dynamic-dialog-wrapper' + r),
+        document.body.appendChild(d),
+        render(s, d),
+        document.body.appendChild(s.el),
+        s.component.ctx.show()
+      )
     },
 
-    closeDialog(dialogName) {
-      // 通过 widgetRefList 获取 el-dialog 组件引用
-      if (!!dialogName) {
-        let foundW = this.getWidgetRef(dialogName)
-        if (!!foundW) {
-          foundW.setVisible(false)
-        }
-      }
-    },
+    // showDialog(dialogName) {
+    //   if (!!dialogName) {
+    //     if (typeof dialogName === 'string') {
+    //       this.findWidgetAndSetHidden(widgetNames, false)
+    //     } else if (Array.isArray(widgetNames)) {
+    //       widgetNames.forEach(wn => {
+    //         this.findWidgetAndSetHidden(wn, false)
+    //       })
+    //     }
+    //   }
+    // },
 
     /**
      * 获取所有字段组件

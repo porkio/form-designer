@@ -1,11 +1,6 @@
 <template>
   <div id="app">
     <VFormDesigner ref="vfDesignerRef" :global-dsv="globalDsv">
-      <!--
-      <template #customToolButtons>
-        <el-button type="text" @click="doTest">测试btn</el-button>
-      </template>
-      -->
     </VFormDesigner>
   </div>
 </template>

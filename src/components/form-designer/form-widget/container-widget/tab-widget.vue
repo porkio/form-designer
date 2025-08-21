@@ -90,6 +90,7 @@
     },
     mounted() {
       //
+      console.log('widget', this.widget)
     },
     methods: {
       onTabClick(evt) {
