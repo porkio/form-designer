@@ -512,7 +512,6 @@ export default {
 
 			if (!!this.field.options.onClick) {
 				let changeFn = new Function(this.field.options.onClick)
-        console.log(changeFn)
 				changeFn.call(this)
 			} else {
 				this.dispatch('VFormRender', 'buttonClick', [this])

@@ -8,7 +8,7 @@
                :with-credentials="field.options.withCredentials"
                :multiple="field.options.multipleSelect" :file-list="fileList" :show-file-list="field.options.showFileList"
                list-type="picture-card" :class="{'hideUploadDiv': uploadBtnHidden}"
-               :limit="field.options.limit" :on-exceed="handlePictureExceed"
+               :limit="field.options.limit" :on-change="handleOnPictureChange" :on-exceed="handlePictureExceed"
                :before-upload="beforePictureUpload" :on-preview="handlePictureCardPreview"
                :on-success="handlePictureUpload" :on-error="handleUploadError" >
       <template #file="{ file }">
@@ -156,12 +156,17 @@
     },
 
     methods: {
+      handleOnPictureChange(file, fileList) {
+        console.log('file change', file, fileList)
+      },    
+
       handlePictureExceed() {
         let uploadLimit = this.field.options.limit
         this.$message.warning( this.i18nt('render.hint.uploadExceed').replace('${uploadLimit}', uploadLimit) )
       },
 
       beforePictureUpload(file) {
+        console.log('beforePictureUpload', file)
         let fileTypeCheckResult = false
         if (!!this.field.options && !!this.field.options.fileTypes) {
           let uploadFileTypes = this.field.options.fileTypes

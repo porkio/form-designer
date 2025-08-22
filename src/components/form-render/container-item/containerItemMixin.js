@@ -1,233 +1,235 @@
-import { traverseFieldWidgetsOfContainer } from "@/utils/util";
+import { traverseFieldWidgetsOfContainer } from '@/utils/util'
 
 export default {
-  inject: ['getFormConfig', 'getGlobalDsv'],
-  computed: {
-    customClass() {
-      return this.widget.options.customClass || ''
-    },
+	inject: ['getFormConfig', 'getGlobalDsv'],
+	computed: {
+		customClass() {
+			return this.widget.options.customClass || ''
+		},
 
-    formModel: {
-      cache: false,
-      get() {
-        return this.globalModel.formModel
-      }
-    },
+		formModel: {
+			cache: false,
+			get() {
+				return this.globalModel.formModel
+			},
+		},
+	},
+	mounted() {
+		this.callSetHidden()
+	},
 
-  },
-  mounted() {
-    this.callSetHidden()
-  },
+	methods: {
+		unregisterFromRefList() {
+			//销毁容器组件时注销组件ref
+			if (this.refList !== null && !!this.widget.options.name) {
+				let oldRefName = this.widget.options.name
+				delete this.refList[oldRefName]
+			}
+		},
 
-  methods: {
-    unregisterFromRefList() {  //销毁容器组件时注销组件ref
-      if ((this.refList !== null) && !!this.widget.options.name) {
-        let oldRefName = this.widget.options.name
-        delete this.refList[oldRefName]
-      }
-    },
+		/* 主动触发setHidden()方法，以清空被隐藏容器内字段组件的校验规则！！ */
+		callSetHidden() {
+			if (this.widget.options.hidden === true) {
+				this.setHidden(true)
+			}
+		},
 
-    /* 主动触发setHidden()方法，以清空被隐藏容器内字段组件的校验规则！！ */
-    callSetHidden() {
-      if (this.widget.options.hidden === true) {
-        this.setHidden(true)
-      }
-    },
+		//--------------------- 以下为组件支持外部调用的API方法 begin ------------------//
+		/* 提示：用户可自行扩充这些方法！！！ */
 
-    //--------------------- 以下为组件支持外部调用的API方法 begin ------------------//
-    /* 提示：用户可自行扩充这些方法！！！ */
+		setHidden(flag) {
+			this.widget.options.hidden = flag
 
-    setHidden(flag) {
-      this.widget.options.hidden = flag
+			/* 容器被隐藏后，需要同步清除容器内部字段组件的校验规则 */
+			let clearRulesFn = (fieldWidget) => {
+				let fwName = fieldWidget.options.name
+				let fwRef = this.getWidgetRef(fwName)
+				if (flag && !!fwRef && !!fwRef.clearFieldRules) {
+					fwRef.clearFieldRules()
+				}
 
-      /* 容器被隐藏后，需要同步清除容器内部字段组件的校验规则 */
-      let clearRulesFn = (fieldWidget) => {
-        let fwName = fieldWidget.options.name
-        let fwRef = this.getWidgetRef(fwName)
-        if (flag && !!fwRef && !!fwRef.clearFieldRules) {
-          fwRef.clearFieldRules()
-        }
+				if (!flag && !!fwRef && !!fwRef.buildFieldRules) {
+					fwRef.buildFieldRules()
+				}
+			}
 
-        if (!flag && !!fwRef && !!fwRef.buildFieldRules) {
-          fwRef.buildFieldRules()
-        }
-      }
+			traverseFieldWidgetsOfContainer(this.widget, clearRulesFn)
+		},
 
-      traverseFieldWidgetsOfContainer(this.widget, clearRulesFn)
-    },
+		setVisible(flag) {
+			this.widget.visible = flag
+		},
 
-    setVisible(flag) {
-      this.widget.visible = flag
-    },
+		activeTab(tabIndex) {
+			//tabIndex从0计数
+			if (tabIndex >= 0 && tabIndex < this.widget.tabs.length) {
+				this.widget.tabs.forEach((tp, idx) => {
+					tp.options.active = idx === tabIndex
+					if (idx === tabIndex) {
+						this.activeTabName = tp.options.name
+					}
+				})
+			}
+		},
 
-    activeTab(tabIndex) { //tabIndex从0计数
-      if ((tabIndex >= 0) && (tabIndex < this.widget.tabs.length)) {
-        this.widget.tabs.forEach((tp, idx) => {
-          tp.options.active = idx === tabIndex
-          if (idx === tabIndex) {
-            this.activeTabName = tp.options.name
-          }
-        })
-      }
-    },
+		disableTab(tabIndex) {
+			if (tabIndex >= 0 && tabIndex < this.widget.tabs.length) {
+				this.widget.tabs[tabIndex].options.disabled = true
+			}
+		},
 
-    disableTab(tabIndex) {
-      if ((tabIndex >= 0) && (tabIndex < this.widget.tabs.length)) {
-        this.widget.tabs[tabIndex].options.disabled = true
-      }
-    },
+		enableTab(tabIndex) {
+			if (tabIndex >= 0 && tabIndex < this.widget.tabs.length) {
+				this.widget.tabs[tabIndex].options.disabled = false
+			}
+		},
 
-    enableTab(tabIndex) {
-      if ((tabIndex >= 0) && (tabIndex < this.widget.tabs.length)) {
-        this.widget.tabs[tabIndex].options.disabled = false
-      }
-    },
+		hideTab(tabIndex) {
+			if (tabIndex >= 0 && tabIndex < this.widget.tabs.length) {
+				this.widget.tabs[tabIndex].options.hidden = true
+			}
+		},
 
-    hideTab(tabIndex) {
-      if ((tabIndex >= 0) && (tabIndex < this.widget.tabs.length)) {
-        this.widget.tabs[tabIndex].options.hidden = true
-      }
-    },
+		showTab(tabIndex) {
+			if (tabIndex >= 0 && tabIndex < this.widget.tabs.length) {
+				this.widget.tabs[tabIndex].options.hidden = false
+			}
+		},
 
-    showTab(tabIndex) {
-      if ((tabIndex >= 0) && (tabIndex < this.widget.tabs.length)) {
-        this.widget.tabs[tabIndex].options.hidden = false
-      }
-    },
+		setWidgetOption(optionName, optionValue) {
+			//通用组件选项修改API
+			if (this.widget.options.hasOwnProperty(optionName)) {
+				this.widget.options[optionName] = optionValue
+			}
+		},
 
-    setWidgetOption(optionName, optionValue) { //通用组件选项修改API
-      if (this.widget.options.hasOwnProperty(optionName)) {
-        this.widget.options[optionName] = optionValue
-      }
-    },
+		/**
+		 * 获取子表单的行数
+		 */
+		getSubFormRowCount() {
+			return !this.rowIdData ? 0 : this.rowIdData.length
+		},
 
-    /**
-     * 获取子表单的行数
-     */
-    getSubFormRowCount() {
-      return !this.rowIdData ? 0 : this.rowIdData.length
-    },
+		disableSubFormRow(rowIndex) {
+			this.widget.widgetList.forEach((subWidget) => {
+				let swRefName =
+					subWidget.options.name + '@row' + this.rowIdData[rowIndex]
+				let foundSW = this.getWidgetRef(swRefName)
+				if (!!foundSW) {
+					foundSW.setDisabled(true)
+				}
+			})
+		},
 
-    disableSubFormRow(rowIndex) {
-      this.widget.widgetList.forEach(subWidget => {
-        let swRefName = subWidget.options.name + '@row' + this.rowIdData[rowIndex]
-        let foundSW = this.getWidgetRef(swRefName)
-        if (!!foundSW) {
-          foundSW.setDisabled(true)
-        }
-      })
-    },
+		enableSubFormRow(rowIndex) {
+			this.widget.widgetList.forEach((subWidget) => {
+				let swRefName =
+					subWidget.options.name + '@row' + this.rowIdData[rowIndex]
+				let foundSW = this.getWidgetRef(swRefName)
+				if (!!foundSW) {
+					foundSW.setDisabled(false)
+				}
+			})
+		},
 
-    enableSubFormRow(rowIndex) {
-      this.widget.widgetList.forEach(subWidget => {
-        let swRefName = subWidget.options.name + '@row' + this.rowIdData[rowIndex]
-        let foundSW = this.getWidgetRef(swRefName)
-        if (!!foundSW) {
-          foundSW.setDisabled(false)
-        }
-      })
-    },
+		disableSubForm() {
+			if (this.rowIdData.length > 0) {
+				this.rowIdData.forEach((dataRow, rIdx) => {
+					this.disableSubFormRow(rIdx)
+				})
+			}
 
-    disableSubForm() {
-      if (this.rowIdData.length > 0) {
-        this.rowIdData.forEach((dataRow, rIdx) => {
-          this.disableSubFormRow(rIdx)
-        })
-      }
+			//禁用3个操作按钮
+			this.actionDisabled = true
+		},
 
-      //禁用3个操作按钮
-      this.actionDisabled = true
-    },
+		enableSubForm() {
+			if (this.rowIdData.length > 0) {
+				this.rowIdData.forEach((dataRow, rIdx) => {
+					this.enableSubFormRow(rIdx)
+				})
+			}
 
-    enableSubForm() {
-      if (this.rowIdData.length > 0) {
-        this.rowIdData.forEach((dataRow, rIdx) => {
-          this.enableSubFormRow(rIdx)
-        })
-      }
+			//启用3个操作按钮
+			this.actionDisabled = false
+		},
 
-      //启用3个操作按钮
-      this.actionDisabled = false
-    },
+		resetSubForm() {
+			//重置subForm数据为空
+			if (this.widget.type === 'sub-form') {
+				let subFormModel = this.formModel[this.widget.options.name]
+				if (!!subFormModel) {
+					subFormModel.splice(0, subFormModel.length)
+					this.rowIdData.splice(0, this.rowIdData.length)
+				}
 
-    resetSubForm() { //重置subForm数据为空
-      if (this.widget.type === 'sub-form') {
-        let subFormModel = this.formModel[this.widget.options.name]
-        if (!!subFormModel) {
-          subFormModel.splice(0, subFormModel.length)
-          this.rowIdData.splice(0, this.rowIdData.length)
-        }
+				if (this.widget.options.showBlankRow) {
+					this.addSubFormRow()
+				}
+			}
+		},
 
-        if (this.widget.options.showBlankRow) {
-          this.addSubFormRow()
-        }
-      }
-    },
+		getSubFormValues(needValidation = true) {
+			if (this.widget.type === 'sub-form') {
+				//TODO: 逐行校验子表单！！
+				return this.formModel[this.widget.options.name]
+			} else {
+				this.$message.error(this.i18nt('render.hint.nonSubFormType'))
+			}
+		},
 
-    getSubFormValues(needValidation = true) {
-      if (this.widget.type === 'sub-form') {
-        //TODO: 逐行校验子表单！！
-        return this.formModel[this.widget.options.name]
-      } else {
-        this.$message.error(this.i18nt('render.hint.nonSubFormType'))
-      }
-    },
+		// validateField(fieldName) { //逐行校验子表单字段
+		//   //TODO:
+		// },
+		//
+		// validateSubForm() { //逐行校验子表单全部字段
+		//   //TODO:
+		// },
 
-    // validateField(fieldName) { //逐行校验子表单字段
-    //   //TODO:
-    // },
-    //
-    // validateSubForm() { //逐行校验子表单全部字段
-    //   //TODO:
-    // },
+		/**
+		 * 动态增加自定义css样式
+		 * @param className
+		 */
+		addCssClass(className) {
+			if (!this.widget.options.customClass) {
+				this.widget.options.customClass = [className]
+			} else {
+				this.widget.options.customClass.push(className)
+			}
+		},
 
-    /**
-     * 动态增加自定义css样式
-     * @param className
-     */
-    addCssClass(className) {
-      if (!this.widget.options.customClass) {
-        this.widget.options.customClass = [className]
-      } else {
-        this.widget.options.customClass.push(className)
-      }
-    },
+		/**
+		 * 动态移除自定义css样式
+		 * @param className
+		 */
+		removeCssClass(className) {
+			if (!this.widget.options.customClass) {
+				return
+			}
 
-    /**
-     * 动态移除自定义css样式
-     * @param className
-     */
-    removeCssClass(className) {
-      if (!this.widget.options.customClass) {
-        return
-      }
+			let foundIdx = -1
+			this.widget.options.customClass.map((cc, idx) => {
+				if (cc === className) {
+					foundIdx = idx
+				}
+			})
+			if (foundIdx > -1) {
+				this.widget.options.customClass.splice(foundIdx, 1)
+			}
+		},
 
-      let foundIdx = -1
-      this.widget.options.customClass.map((cc, idx) => {
-        if (cc === className) {
-          foundIdx = idx
-        }
-      })
-      if (foundIdx > -1) {
-        this.widget.options.customClass.splice(foundIdx, 1)
-      }
-    },
-
-    emitDialogOkButtonClick(event) {
+		emitDialogOkButtonClick(event) {
 			if (!!this.designState) {
 				//设计状态不触发点击事件
 				return
 			}
 
-			console.log(
-				'emitDialogOkButtonClick',
-				this.widget.options.onOkButtonClick
-			)
-
 			if (!!this.widget.options.onOkButtonClick) {
 				let customFn = new Function(this.widget.options.onOkButtonClick)
 				customFn.call(this)
 			} else {
+				// 尝试默认关闭
+				this.widget.visible = false
 				/* 必须调用mixins中的dispatch方法逐级向父组件发送消息！！ */
 				this.dispatch('VFormRender', 'okButtonClick', [this])
 			}
@@ -245,12 +247,18 @@ export default {
 				)
 				customFn.call(this)
 			} else {
+				// 尝试默认关闭
+				this.widget.visible = false
 				/* 必须调用mixins中的dispatch方法逐级向父组件发送消息！！ */
 				this.dispatch('VFormRender', 'cancelButtonClick', [this])
 			}
 		},
 
 		handleOnDialogOpened() {
+      if (!!this.designState) {
+        //设计状态不触发打开事件
+        return
+      }
 			if (!!this.widget.options.onDialogOpened) {
 				let mountFunc = new Function(this.widget.options.onDialogOpened)
 				mountFunc.call(this)
@@ -258,16 +266,21 @@ export default {
 		},
 
 		handleOnDialogBeforeClose() {
+      if (!!this.designState) {
+        //设计状态不触发关闭事件
+        return
+      }
+      // 处理关闭前的逻辑
 			if (!!this.widget.options.onDialogBeforeClose) {
 				let mountFunc = new Function(
 					this.widget.options.onDialogBeforeClose
 				)
 				mountFunc.call(this)
 			}
+      // 最终执行关闭
+      this.widget.visible = false
 		},
 
-    //--------------------- 以上为组件支持外部调用的API方法 end ------------------//
-
-  },
-
+		//--------------------- 以上为组件支持外部调用的API方法 end ------------------//
+	},
 }

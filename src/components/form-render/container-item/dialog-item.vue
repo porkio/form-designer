@@ -7,12 +7,13 @@
                  :title="widget.options.title"
                  :width="widget.options.dialogWidth"
                  :fullscreen="widget.options.fullscreen"
-                 :top="widget.options.top"
+                 :center="widget.options.center"
                  :close-on-click-modal="widget.options.closeOnClickModal"
                  :show-close="widget.options.showClose"
-                 :before-close="(done) => { widget.options.beforeClose ? widget.options.beforeClose(done) : done() }"
+                 :before-close="handleOnDialogBeforeClose"
                  :custom-class="widget.options.customClass"
                  :close-on-press-escape="widget.options.closeOnPressEscape"
+                 @opened="handleOnDialogOpened"
                  :ref="widget.id"
                  :class="[customClass]">
 
@@ -51,10 +52,12 @@
 
         <template #footer>
           <span class="dialog-footer">
-            <el-button v-show="!widget.options.cancelButtonHidden" @click="emitDialogCancelButtonClick">Cancel</el-button>
-            <el-button v-show="!widget.options.okButtonHidden" type="primary"
+            <el-button v-show="!widget.options.cancelButtonHidden"
+                       @click="emitDialogCancelButtonClick">{{ widget.options.cancelButtonLabel || i18nt('designer.hint.confirm') }}</el-button>
+            <el-button v-show="!widget.options.okButtonHidden"
+                       type="primary"
                        @click="emitDialogOkButtonClick">
-              Confirm
+              {{ widget.options.okButtonLabel || i18nt('designer.hint.cancel') }}
             </el-button>
           </span>
         </template>
@@ -95,7 +98,7 @@ export default {
     this.initRefList()
   },
   mounted() {
-    console.log('dialog widget', this.widget)
+    //
   },
   beforeUnmount() {
     this.unregisterFromRefList()

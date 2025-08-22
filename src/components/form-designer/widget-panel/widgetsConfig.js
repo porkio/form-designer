@@ -798,7 +798,7 @@ export const advancedFields = [
 			customRule: '',
 			customRuleHint: '',
 			//-------------------
-			uploadURL: '',
+			uploadURL: 'http://cqcet-api.kjbvip.com/index/ajax/upload',
 			uploadTip: '',
 			withCredentials: false,
 			multipleSelect: false,
@@ -842,7 +842,7 @@ export const advancedFields = [
 			customRule: '',
 			customRuleHint: '',
 			//-------------------
-			uploadURL: '',
+			uploadURL: 'http://cqcet-api.kjbvip.com/index/ajax/upload',
 			uploadTip: '',
 			withCredentials: false,
 			multipleSelect: false,
